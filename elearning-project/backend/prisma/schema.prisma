@@ -1,0 +1,218 @@
+// ============================================
+// SCHEMA PRISMA - Plateforme E-learning MVP
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --------------------------------------------
+// ENUMS
+// --------------------------------------------
+
+enum Role {
+  REFERENT
+  APPRENANT
+}
+
+enum Categorie {
+  NUMERIQUE
+  ARTISANAT
+  AGRICULTURE
+}
+
+// --------------------------------------------
+// UTILISATEUR (table unique avec discriminant "role")
+// Choix : au lieu de 3 tables héritées (Utilisateur/Referent/Apprenant),
+// on regroupe en 1 table avec des champs optionnels selon le rôle.
+// Plus simple à gérer pour l'auth, et suffisant pour un MVP.
+// --------------------------------------------
+
+model User {
+  id_user      Int      @id @default(autoincrement())
+  nom          String
+  email        String   @unique
+  mdp          String   // stocké hashé (bcrypt), jamais en clair
+  role         Role
+  date_insc    DateTime @default(now())
+
+  // Champs spécifiques Referent (nullable si role = APPRENANT)
+  specialite   String?
+  biographie   String?
+  solde_gains  Float?   @default(0)
+
+  // Champs spécifiques Apprenant (nullable si role = REFERENT)
+  xp_total       Int? @default(0)
+  niveau         Int? @default(1)
+  points_boutique Int? @default(0)
+
+  // Relations
+  cours_crees      Cours[]          @relation("ReferentCours")
+  inscriptions     Inscription[]
+  tentatives_quiz  TentativeQuiz[]
+  chapitres_vus    ChapitreVu[]
+
+  @@map("users")
+}
+
+// --------------------------------------------
+// COURS
+// --------------------------------------------
+
+model Cours {
+  id_cours    Int       @id @default(autoincrement())
+  titre       String
+  description String
+  url_video   String?
+  prix        Float     @default(0)
+  categorie   Categorie
+
+  referent_id Int
+  referent    User      @relation("ReferentCours", fields: [referent_id], references: [id_user])
+
+  chapitres    Chapitre[]
+  quiz         Quiz?          // relation 1-1 "possède"
+  inscriptions Inscription[]
+
+  created_at DateTime @default(now())
+
+  @@map("cours")
+}
+
+// --------------------------------------------
+// CHAPITRE
+// --------------------------------------------
+
+model Chapitre {
+  id_chap         Int    @id @default(autoincrement())
+  titre           String
+  ordre_lecture   Int
+  contenu_textuel String?
+
+  cours_id Int
+  cours    Cours @relation(fields: [cours_id], references: [id_cours], onDelete: Cascade)
+
+  vues ChapitreVu[]
+
+  @@map("chapitres")
+}
+
+// --------------------------------------------
+// CHAPITRE VU (table de liaison Apprenant <-> Chapitre)
+// Permet de calculer une progression réelle, chapitre par chapitre,
+// plutôt qu'un simple pourcentage stocké et jamais recalculé.
+// --------------------------------------------
+
+model ChapitreVu {
+  id_vue   Int      @id @default(autoincrement())
+  date_vue DateTime @default(now())
+
+  apprenant_id Int
+  apprenant    User @relation(fields: [apprenant_id], references: [id_user])
+
+  chapitre_id Int
+  chapitre    Chapitre @relation(fields: [chapitre_id], references: [id_chap], onDelete: Cascade)
+
+  @@unique([apprenant_id, chapitre_id]) // un chapitre n'est compté qu'une fois par apprenant
+  @@map("chapitres_vus")
+}
+
+// --------------------------------------------
+// INSCRIPTION (table de liaison Apprenant <-> Cours)
+// Permet de suivre la progression sur un cours
+// --------------------------------------------
+
+model Inscription {
+  id_inscription   Int      @id @default(autoincrement())
+  date_inscription DateTime @default(now())
+  progression      Int      @default(0) // % simple, ex: 0 à 100
+
+  apprenant_id Int
+  apprenant    User  @relation(fields: [apprenant_id], references: [id_user])
+
+  cours_id Int
+  cours    Cours @relation(fields: [cours_id], references: [id_cours])
+
+  @@unique([apprenant_id, cours_id]) // un apprenant ne s'inscrit qu'une fois au même cours
+  @@map("inscriptions")
+}
+
+// --------------------------------------------
+// QUIZ (relation 1-1 avec Cours : "possède")
+// --------------------------------------------
+
+model Quiz {
+  id_quiz            Int @id @default(autoincrement())
+  titre              String
+  score_min_reussite Int @default(50) // en %
+  temps_limite       Int? // en minutes, null = pas de limite
+
+  cours_id Int   @unique // 1-1 : un cours a au plus un quiz
+  cours    Cours @relation(fields: [cours_id], references: [id_cours], onDelete: Cascade)
+
+  questions        Question[]
+  tentatives       TentativeQuiz[]
+
+  @@map("quiz")
+}
+
+// --------------------------------------------
+// QUESTION
+// --------------------------------------------
+
+model Question {
+  id_quest         Int    @id @default(autoincrement())
+  enonce           String
+  options_reponses Json   // ex: ["Option A", "Option B", "Option C"]
+  reponse_correcte String // ex: "Option A"
+
+  quiz_id Int
+  quiz    Quiz @relation(fields: [quiz_id], references: [id_quiz], onDelete: Cascade)
+
+  @@map("questions")
+}
+
+// --------------------------------------------
+// TENTATIVE QUIZ
+// --------------------------------------------
+
+model TentativeQuiz {
+  id_tentative Int      @id @default(autoincrement())
+  score_obtenu Int      // en %
+  date_passage DateTime @default(now())
+  est_reussi   Boolean
+
+  apprenant_id Int
+  apprenant    User @relation(fields: [apprenant_id], references: [id_user])
+
+  quiz_id Int
+  quiz    Quiz @relation(fields: [quiz_id], references: [id_quiz])
+
+  @@map("tentatives_quiz")
+}
+
+// ============================================
+// HORS SCOPE MVP - prévu dans le diagramme de classes
+// mais non implémenté faute de temps (à mentionner au jury
+// comme évolution future)
+// ============================================
+
+// model Badge {
+//   id_badge     Int    @id @default(autoincrement())
+//   libelle      String
+//   icone_url    String
+//   condition_xp Int
+// }
+
+// model Certificat {
+//   id_certif     Int      @id @default(autoincrement())
+//   code_unique   String   @unique
+//   date_emission DateTime @default(now())
+//   url_pdf       String
+//   tentative_id  Int      @unique
+// }
