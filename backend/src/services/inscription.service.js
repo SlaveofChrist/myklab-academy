@@ -41,19 +41,22 @@ async function getProgression(apprenant_id, cours_id) {
   const totalChapitres = chapitres.length;
   const chapitreIds = chapitres.map((c) => c.id_chap);
 
-  const nbVus = await prisma.chapitreVu.count({
+  const nbVus = await prisma.chapitreVu.findMany({
     where: {
       apprenant_id,
       chapitre_id: { in: chapitreIds },
     },
+    select: { chapitre_id: true },
   });
 
-  const pourcentage = totalChapitres === 0 ? 0 : Math.round((nbVus / totalChapitres) * 100);
+  const chapitresVusIds = nbVus.map((v) => v.chapitre_id);
+  const pourcentage = totalChapitres === 0 ? 0 : Math.round((chapitresVusIds.length / totalChapitres) * 100);
 
   return {
     cours_id: Number(cours_id),
     total_chapitres: totalChapitres,
-    chapitres_vus: nbVus,
+    chapitres_vus: chapitresVusIds.length,
+    chapitres_vus_ids: chapitresVusIds, // permet au frontend de savoir PRÉCISÉMENT lesquels sont vus
     pourcentage,
   };
 }
