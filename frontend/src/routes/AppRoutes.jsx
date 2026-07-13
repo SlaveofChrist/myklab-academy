@@ -3,6 +3,7 @@ import useAuth from '../hooks/useAuth';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
+import Catalogue from '../pages/Catalogue';
 
 /**
  * Version simple pour cette étape : si pas de token, on redirige vers /login.
@@ -17,6 +18,7 @@ function AppRoutes() {
       <Route path="/login" element={token ? <Navigate to="/" /> : <Login />} />
       <Route path="/register" element={token ? <Navigate to="/" /> : <Register />} />
       <Route path="/" element={token ? <Dashboard /> : <Navigate to="/login" />} />
+      <Route path="/catalogue" element={token ? <Catalogue /> : <Navigate to="/login" />} />
     </Routes>
   );
 }
