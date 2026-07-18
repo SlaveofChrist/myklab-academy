@@ -12,6 +12,5 @@ export async function loginRequest({ email, mdp }) {
 
 export async function registerRequest({ nom, email, mdp, role }) {
   const response = await axiosClient.post('/auth/register', { nom, email, mdp, role });
-  console.log(response.data);
   return response.data; // { user, token }
 }

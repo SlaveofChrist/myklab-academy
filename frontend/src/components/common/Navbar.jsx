@@ -18,6 +18,11 @@ function Navbar() {
         <Link to="/catalogue" className="text-sm font-semibold text-brand-ink hover:text-brand-orange">
           Catalogue
         </Link>
+        {user?.role === 'REFERENT' && (
+          <Link to="/creer-cours" className="text-sm font-semibold text-brand-ink hover:text-brand-orange">
+            Créer un cours
+          </Link>
+        )}
 
         <span className="text-sm text-brand-ink/60">
           {user?.nom} · {user?.role}

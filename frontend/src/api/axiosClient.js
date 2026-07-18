@@ -4,7 +4,6 @@ const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL, // ex: http://localhost:5000/api
 });
 
-console.log("Ma Base URL :", import.meta.env.VITE_API_URL);
 
 // Intercepteur : avant chaque requête, si un token existe en localStorage,
 // on l'ajoute automatiquement dans le header Authorization.

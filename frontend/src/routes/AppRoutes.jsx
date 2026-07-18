@@ -5,6 +5,7 @@ import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import Catalogue from '../pages/Catalogue';
 import CoursDetail from '../pages/CoursDetail';
+import CreerCours from '../pages/CreerCours';
 
 /**
  * Version simple pour cette étape : si pas de token, on redirige vers /login.
@@ -12,7 +13,7 @@ import CoursDetail from '../pages/CoursDetail';
  * avec en plus la distinction de routes selon le rôle (Referent vs Apprenant).
  */
 function AppRoutes() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   return (
     <Routes>
@@ -21,6 +22,10 @@ function AppRoutes() {
       <Route path="/" element={token ? <Dashboard /> : <Navigate to="/login" />} />
       <Route path="/catalogue" element={token ? <Catalogue /> : <Navigate to="/login" />} />
       <Route path="/cours/:id" element={token ? <CoursDetail /> : <Navigate to="/login" />} />
+      <Route
+        path="/creer-cours"
+        element={token && user?.role === 'REFERENT' ? <CreerCours /> : <Navigate to="/" />}
+      />
     </Routes>
   );
 }
