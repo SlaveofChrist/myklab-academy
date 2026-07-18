@@ -7,15 +7,16 @@ function Dashboard() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen p-10">
+    <div className="min-h-screen">
       <Navbar />
-
-      <p className="text-lg mt-10">
-        Bienvenue, <span className="font-semibold text-brand-brown">{user?.nom}</span>
-      </p>
-      <p className="text-sm text-brand-ink/70 mt-1">
-        Connecté en tant que : <span className="font-semibold">{user?.role}</span>
-      </p>
+      <div className="p-10">
+        <p className="text-lg">
+          Bienvenue, <span className="font-semibold text-brand-brown">{user?.nom}</span>
+        </p>
+        <p className="text-sm text-brand-ink/70 mt-1">
+          Connecté en tant que : <span className="font-semibold">{user?.role}</span>
+        </p>
+      </div>
     </div>
   );
 }
