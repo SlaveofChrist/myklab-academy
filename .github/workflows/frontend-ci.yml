@@ -37,9 +37,9 @@ jobs:
       - name: Installer les dépendances
         run: npm ci
 
-      # Décommente dès que ESLint est configuré côté frontend
-      # - name: Lint
-      #   run: npm run lint
+      - name: Lint
+        run: npm run lint
+
 
       - name: Build de production
         run: npm run build

@@ -62,9 +62,9 @@ jobs:
       - name: Appliquer les migrations sur la base de test
         run: npx prisma migrate deploy
 
-      # Décommente dès que ESLint est configuré (prévu dans la roadmap qualité)
-      # - name: Lint
-      #   run: npm run lint
+      - name: Lint
+        run: npm run lint
+
 
       # Décommente dès qu'une suite de tests automatisés existe
       # - name: Tests
