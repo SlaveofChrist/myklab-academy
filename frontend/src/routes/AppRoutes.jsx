@@ -6,6 +6,9 @@ import Dashboard from '../pages/Dashboard';
 import Catalogue from '../pages/Catalogue';
 import CoursDetail from '../pages/CoursDetail';
 import CreerCours from '../pages/CreerCours';
+import CreerQuiz from '../pages/CreerQuiz';
+import QuizDetail from '../pages/QuizDetail';
+
 
 /**
  * Version simple pour cette étape : si pas de token, on redirige vers /login.
@@ -22,9 +25,14 @@ function AppRoutes() {
       <Route path="/" element={token ? <Dashboard /> : <Navigate to="/login" />} />
       <Route path="/catalogue" element={token ? <Catalogue /> : <Navigate to="/login" />} />
       <Route path="/cours/:id" element={token ? <CoursDetail /> : <Navigate to="/login" />} />
+      <Route path="/quiz/:id" element={token ? <QuizDetail /> : <Navigate to="/login" />} />
       <Route
         path="/creer-cours"
         element={token && user?.role === 'REFERENT' ? <CreerCours /> : <Navigate to="/" />}
+      />
+      <Route
+        path="/creer-quiz"
+        element={token && user?.role === 'REFERENT' ? <CreerQuiz /> : <Navigate to="/" />}
       />
     </Routes>
   );

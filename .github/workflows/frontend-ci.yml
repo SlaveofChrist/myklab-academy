@@ -1,0 +1,66 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['frontend/**']
+  pull_request:
+    branches: [main]
+    paths: ['frontend/**']
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  # ---------------------------------------------------------
+  # JOB CI : vérifie que le build de production réussit
+  # ---------------------------------------------------------
+  ci:
+    runs-on: ubuntu-latest
+
+    env:
+      VITE_API_URL: https://api-placeholder.example.com/api
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      # Décommente dès que ESLint est configuré côté frontend
+      # - name: Lint
+      #   run: npm run lint
+
+      - name: Build de production
+        run: npm run build
+
+  # ---------------------------------------------------------
+  # JOB CD : déploiement — désactivé par défaut (if: false)
+  # À activer une fois Vercel (ou autre) configuré
+  # ---------------------------------------------------------
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    if: false && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Déployer sur Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: frontend
+          vercel-args: '--prod'

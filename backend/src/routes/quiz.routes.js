@@ -5,7 +5,11 @@ const quizController = require('../controllers/quiz.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const requireRole = require('../middlewares/role.middleware');
 
-// Soumettre les réponses d'un quiz — réservé aux Apprenants
+router.get('/:id', authMiddleware, quizController.getDetail);
+router.get('/:id/tentatives', authMiddleware, requireRole('APPRENANT'), quizController.getTentatives);
 router.post('/:id/tentative', authMiddleware, requireRole('APPRENANT'), quizController.soumettreTentative);
+router.post('/', authMiddleware, requireRole('REFERENT'), quizController.create);
 
 module.exports = router;
+
+
