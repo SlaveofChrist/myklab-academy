@@ -66,9 +66,9 @@ jobs:
       # - name: Lint
       #   run: npm run lint
 
-      # Décommente dès qu'une suite de tests automatisés existe
-      # - name: Tests
-      #   run: npm test
+      - name: Tests
+        run: npm test
+
 
       - name: Vérifier que le serveur démarre sans erreur
         run: |
