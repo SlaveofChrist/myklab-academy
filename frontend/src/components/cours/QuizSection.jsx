@@ -112,8 +112,9 @@ function QuizSection({ quiz }) {
             🚫 Limite de tentatives atteinte
           </p>
           <p className="text-sm text-red-600/80">
-            Vous avez utilisé l'ensemble de vos 3 tentatives pour ce quiz. Vous ne pouvez plus soumettre de nouvelles réponses.
+            Vous avez utilisé l&apos;ensemble de vos 3 tentatives pour ce quiz. Vous ne pouvez plus soumettre de nouvelles réponses.
           </p>
+
         </div>
       ) : (
         // --- Formulaire du quiz ---

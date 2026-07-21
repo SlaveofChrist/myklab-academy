@@ -2,7 +2,8 @@
  * Barre de progression simple.
  * Exemple : <ProgressBar pourcentage={40} />
  */
-function ProgressBar({ pourcentage }) {
+function ProgressBar({ pourcentage = 0 }) {
+
   return (
     <div>
       <div className="flex justify-between text-sm mb-1">
