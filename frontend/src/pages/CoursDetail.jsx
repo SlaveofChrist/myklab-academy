@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
+
 import useAuth from '../hooks/useAuth';
 import { getCoursById } from '../api/cours.api';
 import { inscrireCours, getProgression } from '../api/inscription.api';
@@ -8,7 +9,7 @@ import Navbar from '../components/common/Navbar';
 import Badge from '../components/common/Badge';
 import ProgressBar from '../components/cours/ProgressBar';
 import ChapitreItem from '../components/cours/ChapitreItem';
-import QuizSection from '../components/cours/QuizSection';
+
 
 function CoursDetail() {
   const { id } = useParams();
@@ -113,11 +114,40 @@ function CoursDetail() {
         </div>
 
         {estApprenant && cours.quiz && (
-          <QuizSection quiz={cours.quiz} />
+          <div className="mt-8 p-6 bg-brand-cream/50 border border-brand-amber/30 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-wider text-brand-orange">Évaluation finale</span>
+              <h3 className="text-lg font-semibold text-brand-brown mt-0.5">{cours.quiz.titre}</h3>
+              <p className="text-sm text-brand-ink/70">
+                Score minimum pour réussir : <span className="font-medium text-brand-brown">{cours.quiz.score_min_reussite}%</span>
+              </p>
+            </div>
+            <Link
+              to={`/quiz/${cours.quiz.id_quiz}`}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-orange text-white text-sm font-semibold rounded-lg hover:bg-brand-orange/90 transition-colors shadow-sm"
+            >
+              🎯 Passer le quiz
+            </Link>
+          </div>
+        )}
+
+
+        {user?.role === 'REFERENT' && !cours.quiz && (
+          <div className="mt-8 p-6 bg-brand-cream/50 border border-brand-amber/30 rounded-xl text-center">
+            <h3 className="text-lg font-semibold text-brand-brown mb-2">Aucun quiz n'a encore été créé pour ce cours</h3>
+            <p className="text-sm text-brand-ink/70 mb-4">En tant que référent, vous pouvez ajouter un quiz pour évaluer les apprenants.</p>
+            <Link
+              to={`/creer-quiz?coursId=${cours.id_cours}`}
+              className="inline-block px-5 py-2.5 bg-brand-orange text-white text-sm font-semibold rounded-lg hover:bg-brand-orange/90 transition-colors"
+            >
+              + Créer le quiz du cours
+            </Link>
+          </div>
         )}
       </div>
     </div>
   );
 }
+
 
 export default CoursDetail;

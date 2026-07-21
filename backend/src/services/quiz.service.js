@@ -24,6 +24,21 @@ async function soumettreTentative(apprenant_id, quiz_id, reponses) {
     throw error;
   }
 
+  // Vérification de la limite de 3 tentatives
+  const countTentatives = await prisma.tentativeQuiz.count({
+    where: {
+      apprenant_id,
+      quiz_id: Number(quiz_id),
+    },
+  });
+
+  if (countTentatives >= 3) {
+    const error = new Error("Vous avez atteint la limite maximale de 3 tentatives pour ce quiz.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+
   // Calcul du score : on compare chaque réponse donnée à la bonne réponse stockée
   let nbBonnesReponses = 0;
 
@@ -55,4 +70,49 @@ async function soumettreTentative(apprenant_id, quiz_id, reponses) {
   };
 }
 
-module.exports = { soumettreTentative };
+async function getQuizById(id_quiz) {
+  const quiz = await prisma.quiz.findUnique({
+    where: { id_quiz: Number(id_quiz) },
+    include: { questions: true },
+  });
+
+  if (!quiz) {
+    const error = new Error("Quiz introuvable");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return quiz;
+}
+
+async function createQuiz({ titre, score_min_reussite, temps_limite, cours_id, questions }) {
+  return prisma.quiz.create({
+    data: {
+      titre,
+      score_min_reussite: Number(score_min_reussite) || 50,
+      temps_limite: temps_limite ? Number(temps_limite) : null,
+      cours_id: Number(cours_id),
+      questions: {
+        create: (questions || []).map((quest) => ({
+          enonce: quest.enonce,
+          options_reponses: quest.options_reponses || [],
+          reponse_correcte: quest.reponse_correcte || '',
+        })),
+      },
+    },
+    include: { questions: true },
+  });
+}
+
+async function getTentatives(apprenant_id, quiz_id) {
+  return prisma.tentativeQuiz.findMany({
+    where: {
+      apprenant_id: Number(apprenant_id),
+      quiz_id: Number(quiz_id),
+    },
+    orderBy: { date_passage: 'desc' },
+  });
+}
+
+module.exports = { soumettreTentative, createQuiz, getQuizById, getTentatives };
+
